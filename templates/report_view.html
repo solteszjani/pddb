@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>{{ r.title }}</h3>
+<p class="muted">
+  Létrehozó: {{ r.created_by.username if r.created_by else '---' }} |
+  Státusz: {{ r.status.value }}
+</p>
+{% if r.filing_number %}
+  <p class="muted">
+    Ügyszám: {{ r.filing_number }} | Iktatva: {{ r.filing_date }}
+  </p>
+{% endif %}
+
+<p><strong>Jelentéstípus:</strong> {{ r.report_type.name if r.report_type else '---' }}</p>
+
+<pre style="white-space:pre-wrap">{{ r.content }}</pre>
+<p><strong>Intézkedés:</strong>{% if r.action %} 
+  <a href="{{ url_for('view_action', action_id=r.action.id) }}">#{{ r.action.id }} - {{ r.action.location }}</a>
+{% else %} — {% endif %}</p>
+
+<h5>Fájlok</h5>
+<ul>
+  {% for f in r.files %}
+    <li>{{ f.filename }} - <a href="{{ url_for('download_file', filename=f.filename) }}">Letölt</a></li>
+  {% else %}
+    <li>Nincs fájl.</li>
+  {% endfor %}
+</ul>
+
+<div class="mt-3">
+  {% if current_user.can_edit_report(r) %}
+    <a class="btn btn-secondary" href="{{ url_for('edit_report', report_id=r.id) }}">Szerkeszt</a>
+    <a class="btn btn-danger" href="{{ url_for('delete_report', report_id=r.id) }}" onclick="return confirm('Biztos törlöd?')">Töröl</a>
+  {% endif %}
+  {% if current_user.is_supervisor() or current_user.is_admin() or (current_user.position and current_user.position.name in ['Alosztályvezető','Osztályvezető']) %}
+    <a class="btn btn-sm btn-info" href="{{ url_for('assign_report', report_id=r.id) }}">Kioszt</a>
+    <a class="btn btn-sm btn-warning" href="{{ url_for('file_report', report_id=r.id) }}">Iktat</a>
+  {% endif %}
+ <a href="{{ url_for('export_report_pdf', report_id=r.id) }}" class="btn btn-sm btn-primary">
+    PDF Export
+</a>
+
+</div>
+{% endblock %}
+
+

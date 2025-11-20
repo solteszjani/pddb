@@ -7,5 +7,3 @@ beautifulsoup4
 weasyprint
 cssselect
 PyPDF2
-gunicorn
-

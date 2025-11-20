@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>{% if action %}Intézkedés szerkesztése{% else %}Új intézkedés{% endif %}</h3>
+<form method="post" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label class="form-label">Dátum és idő</label>
+    <input name="action_datetime" class="form-control" type="datetime-local"
+           value="{{ dt_local if dt_local is defined else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Helyszín</label>
+    <input name="location" class="form-control" value="{{ action.location if action else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Személy neve</label>
+    <input name="person_name" class="form-control" value="{{ action.person_name if action else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Személy születési ideje</label>
+    <input name="person_id" class="form-control" value="{{ action.person_id_number if action else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Jármű adatok</label>
+    <input name="vehicle_info" class="form-control" value="{{ action.vehicle_info if action else '' }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Fájlok (képek, pdf)</label>
+    <input name="files" type="file" class="form-control" multiple>
+  </div>
+  <button class="btn btn-primary">Mentés</button>
+</form>
+{% endblock %}

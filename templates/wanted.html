@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+.card-custom {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 200px;
+    cursor: pointer;
+    padding: 15px;
+    position: relative;
+}
+.card-custom:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.12);}
+.badge-vehicle { background-color:#1a73e8;color:white;padding:3px 6px;border-radius:5px;}
+.badge-person { background-color:#34a853;color:white;padding:3px 6px;border-radius:5px;}
+#search-input { border-radius: 12px; padding:10px 14px; margin-bottom:15px;}
+
+/* Hover részletező kártya */
+.hover-details {
+    display: none;
+    position: absolute;
+    top: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    padding: 15px 20px;
+    font-size: 0.85em;
+    text-align: left;
+    z-index: 50;
+    min-width: 240px;
+    white-space: normal;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+}
+.hover-details-status {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.75em;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 8px;
+}
+.hover-details-status.vehicle { background-color: #1a73e8; }
+.hover-details-status.person { background-color: #34a853; }
+</style>
+
+<div class="container mt-4">
+
+<h1 class="mb-4 fw-bold">Körözések</h1>
+
+<!-- HOZZÁADÁS -->
+<div class="card card-custom mb-4">
+  <div class="card-header card-header-custom">Körözés hozzáadása</div>
+  <div class="card-body">
+    <select id="wanted-type" class="form-select mb-3">
+        <option value="vehicle">Jármű körözés</option>
+        <option value="person">Személy körözés</option>
+    </select>
+
+    <form id="wanted-form" class="row g-3">
+      <div id="vehicle-fields" class="col-12">
+          <input class="form-control mb-2" name="license_plate" placeholder="Rendszám">
+          <input class="form-control mb-2" name="vehicle_type" placeholder="Típus">
+          <input class="form-control mb-2" name="vehicle_color" placeholder="Szín">
+      </div>
+      <div id="person-fields" class="col-12 d-none">
+          <input class="form-control mb-2" name="person_name" placeholder="Név">
+          <input class="form-control mb-2" name="birth_place" placeholder="Születési hely">
+          <input class="form-control mb-2" type="date" name="birth_date">
+          <input class="form-control mb-2" name="mother_name" placeholder="Anyja neve">
+          <input class="form-control mb-2" name="address" placeholder="Lakcím">
+          <input class="form-control mb-2" name="email" placeholder="E-mail">
+          <input class="form-control mb-2" name="phone" placeholder="Telefonszám">
+          <input class="form-control mb-2" name="other_features" placeholder="Egyéb ismertető jegyek">
+      </div>
+      <div class="col-12">
+          <input class="form-control mb-3" name="reason" placeholder="Körözés leírása">
+      </div>
+      <div class="col-12">
+          <button type="button" id="add-wanted-btn" class="btn btn-primary w-100 fw-bold">+ Körözés hozzáadása</button>
+      </div>
+      <div id="success-msg" class="alert alert-success mt-3 d-none">
+          ✔ Sikeresen hozzáadva!
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- KERESŐ MEZŐ -->
+<input type="text" id="search-input" class="form-control" placeholder="🔍 Keresés név vagy rendszám alapján...">
+
+<!-- KÖRÖZÉSEK -->
+<div class="row g-3">
+  <div class="col-md-6">
+      <h4>🚗 Jármű körözések</h4>
+      <div class="d-flex flex-wrap" id="vehicle-container">
+        {% for item in wanted_list if item.type=='vehicle' %}
+          <div class="card card-custom m-2 p-2 wanted-card" data-id="{{ item.id }}" data-type="vehicle" data-details='{{ item|tojson|safe }}'>
+              <div class="fw-bold">{{ item.license_plate or '-' }}</div>
+              <div class="hover-details">
+                  <div class="hover-details-status vehicle">{{ item.type }}</div>
+                  <div><strong>Típus:</strong> {{ item.vehicle_type }}</div>
+                  <div><strong>Szín:</strong> {{ item.vehicle_color }}</div>
+                  <div><strong>Leírás:</strong> {{ item.reason }}</div>
+              </div>
+              <button class="btn btn-danger btn-sm mt-2 w-100 delete-btn">Törlés</button>
+          </div>
+        {% endfor %}
+      </div>
+  </div>
+  <div class="col-md-6">
+      <h4>🧍‍♂️ Személy körözések</h4>
+      <div class="d-flex flex-wrap" id="person-container">
+        {% for item in wanted_list if item.type=='person' %}
+          <div class="card card-custom m-2 p-2 wanted-card" data-id="{{ item.id }}" data-type="person" data-details='{{ item|tojson|safe }}'>
+              <div class="fw-bold">{{ item.person_name or '-' }}</div>
+              <div class="hover-details">
+                  <div class="hover-details-status person">{{ item.type }}</div>
+                  <div><strong>Születési hely/ idő:</strong> {{ item.birth_place }} {{ item.birth_date }}</div>
+                  <div><strong>Anyja neve:</strong> {{ item.mother_name }}</div>
+                  <div><strong>Cím:</strong> {{ item.address }}</div>
+                  <div><strong>Email:</strong> {{ item.email }}</div>
+                  <div><strong>Telefon:</strong> {{ item.phone }}</div>
+                  <div><strong>Egyéb ismertetőjegy:</strong> {{ item.other_features }}</div>
+                  <div><strong>Leírás:</strong> {{ item.reason }}</div>
+              </div>
+              <button class="btn btn-danger btn-sm mt-2 w-100 delete-btn">Törlés</button>
+          </div>
+        {% endfor %}
+      </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Típus váltás
+const typeSelect = document.getElementById('wanted-type');
+const vehicleFields = document.getElementById('vehicle-fields');
+const personFields = document.getElementById('person-fields');
+typeSelect.addEventListener('change', () => {
+    if(typeSelect.value==='vehicle'){
+        vehicleFields.classList.remove('d-none'); personFields.classList.add('d-none');
+    } else { vehicleFields.classList.add('d-none'); personFields.classList.remove('d-none'); }
+});
+
+// Hozzáadás
+document.getElementById('add-wanted-btn').addEventListener('click', async () => {
+    const form = document.getElementById('wanted-form');
+    const data = { type: typeSelect.value };
+    form.querySelectorAll('input').forEach(input => { if(input.name) data[input.name] = input.value; });
+
+    try {
+        const resp = await fetch('{{ url_for("add_wanted") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await resp.json();
+        if(result.success){
+            document.getElementById('success-msg').classList.remove('d-none');
+            form.reset();
+            typeSelect.value='vehicle';
+            vehicleFields.classList.remove('d-none');
+            personFields.classList.add('d-none');
+
+            const container = document.getElementById(data.type==='vehicle'?'vehicle-container':'person-container');
+            const card = document.createElement('div');
+            card.className="card card-custom m-2 p-2 wanted-card";
+            card.dataset.id = result.id;
+            card.dataset.type = data.type;
+            card.dataset.details = JSON.stringify(data);
+
+            // Hover részletező
+            const hoverDiv = document.createElement('div');
+            hoverDiv.className = "hover-details";
+            let innerHtml = `<div class="hover-details-status ${data.type}">${data.type}</div>`;
+            for(const key in data){ if(!['type','id'].includes(key)) innerHtml+=`<div><strong>${key}:</strong> ${data[key]||'-'}</div>`; }
+            hoverDiv.innerHTML = innerHtml;
+
+            // Kártya teteje: mindig legyen érték
+            const displayName = data.type==='vehicle' ? (data.license_plate||'-') : (data.person_name||'-');
+            card.innerHTML = `<div class="fw-bold">${displayName}</div>`;
+            card.appendChild(hoverDiv);
+            card.innerHTML += `<button class="btn btn-danger btn-sm mt-2 w-100 delete-btn">Törlés</button>`;
+            container.prepend(card);
+
+            // Hover esemény
+            card.addEventListener('mouseenter',()=>{ hoverDiv.style.display='block'; hoverDiv.style.opacity='1'; });
+            card.addEventListener('mouseleave',()=>{ hoverDiv.style.display='none'; hoverDiv.style.opacity='0'; });
+        }
+    } catch(e){ alert('Hiba a szerverrel!'); console.error(e); }
+});
+
+// Törlés
+document.addEventListener('click', async e=>{
+    if(e.target.classList.contains('delete-btn')){
+        const card = e.target.closest('.wanted-card');
+        const id = card.dataset.id;
+        if(confirm("Biztosan törlöd?")){
+            const resp = await fetch(`/delete_wanted/${id}`, { method:'POST' });
+            const result = await resp.json();
+            if(result.success) card.remove();
+        }
+    }
+});
+
+// Hover meglévő kártyákra
+document.querySelectorAll('.wanted-card').forEach(card=>{
+    const hover = card.querySelector('.hover-details');
+    card.addEventListener('mouseenter',()=>{ hover.style.display='block'; hover.style.opacity='1'; });
+    card.addEventListener('mouseleave',()=>{ hover.style.display='none'; hover.style.opacity='0'; });
+});
+
+// Dupla kattintás új ablakban
+document.addEventListener('dblclick', e=>{
+    const card = e.target.closest('.wanted-card');
+    if(!card || e.target.classList.contains('btn')) return;
+    const details = JSON.parse(card.dataset.details);
+    const w = window.open('', '_blank', 'width=600,height=700');
+    w.document.write(`<html><head><title>Részletek</title>
+        <style>
+            body{font-family:sans-serif;margin:20px;}
+            .card{border-radius:14px;padding:20px;box-shadow:0 4px 16px rgba(0,0,0,0.08);}
+            .badge-vehicle{background:#1a73e8;color:white;padding:3px 8px;border-radius:5px;}
+            .badge-person{background:#34a853;color:white;padding:3px 8px;border-radius:5px;}
+            .row{display:flex;flex-wrap:wrap;gap:10px;}
+            .col-6{flex:1 1 45%;}
+            .col-12{flex:1 1 100%;}
+        </style>
+        </head><body>`);
+    if(details.type==='vehicle'){
+        const plate = details.license_plate || '-';
+        w.document.write(`<div class="card"><h3>${plate} <span class="badge-vehicle">Jármű</span></h3>
+            <div class="row"><div class="col-6"><strong>Típus:</strong> ${details.vehicle_type||'-'}</div>
+            <div class="col-6"><strong>Szín:</strong> ${details.vehicle_color||'-'}</div>
+            <div class="col-12"><strong>Leírás:</strong> ${details.reason||'-'}</div></div></div>`);
+    } else {
+        const name = details.person_name || '-';
+        w.document.write(`<div class="card"><h3>${name} <span class="badge-person">Személy</span></h3>
+            <div class="row">
+            <div class="col-6"><strong>Születési hely/ idő:</strong> ${details.birth_place||'-'} ${details.birth_date||'-'}</div>
+            <div class="col-6"><strong>Anyja neve:</strong> ${details.mother_name||'-'}</div>
+            <div class="col-6"><strong>Cím:</strong> ${details.address||'-'}</div>
+            <div class="col-6"><strong>Email:</strong> ${details.email||'-'}</div>
+            <div class="col-6"><strong>Telefon:</strong> ${details.phone||'-'}</div>
+            <div class="col-6"><strong>Egyéb ismertetőjegy:</strong> ${details.other_features||'-'}</div>
+            <div class="col-12"><strong>Leírás:</strong> ${details.reason||'-'}</div>
+            </div></div>`);
+    }
+    w.document.write(`</body></html>`); w.document.close();
+});
+
+// Keresés név/rendszám
+document.getElementById('search-input').addEventListener('input', ()=>{
+    const q=document.getElementById('search-input').value.toLowerCase();
+    document.querySelectorAll('#vehicle-container .wanted-card, #person-container .wanted-card').forEach(card=>{
+        const name=card.querySelector('div').innerText.toLowerCase();
+        card.style.display=name.includes(q)?'':'none';
+    });
+});
+</script>
+
+{% endblock %}
