@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>Új felhasználó</h3>
+<form method="post">
+  <div class="mb-3"><label class="form-label">Felhasználónév</label><input class="form-control" name="username"></div>
+  <div class="mb-3"><label class="form-label">Teljes név</label><input class="form-control" name="full_name"></div>
+  <div class="mb-3"><label class="form-label">Jelszó</label><input class="form-control" name="password" type="password"></div>
+  <div class="mb-3"><label class="form-label">Jog</label>
+    <select name="role" class="form-select">
+      <option value="officer">Alkalamzott</option>
+      <option value="supervisor">Supervisor</option>
+      <option value="admin">Admin</option>
+    </select>
+  </div>
+  <div class="mb-3"><label class="form-label">Rendfokozat</label>
+    <select name="rank_id" class="form-select">
+      <option value="">-- nincs --</option>
+      {% for r in ranks %}<option value="{{ r.id }}">{{ r.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="mb-3"><label class="form-label">Beosztás</label>
+    <select name="position_id" class="form-select">
+      <option value="">-- nincs --</option>
+      {% for p in positions %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="mb-3"><label class="form-label">Osztály</label>
+    <select name="department_id" class="form-select">
+      <option value="">-- nincs --</option>
+      {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="mb-3"><label class="form-label">Alosztály</label>
+    <select name="subdepartment_id" class="form-select">
+      <option value="">-- nincs --</option>
+      {% for s in subdeps %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-primary">Létrehoz</button>
+</form>
+{% endblock %}

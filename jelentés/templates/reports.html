@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center">
+  <h3>Jelentések</h3>
+  <a class="btn btn-success" href="{{ url_for('new_report') }}">Új jelentés</a>
+</div>
+
+<form class="row g-2 my-2">
+  <div class="col-md-4"><input name="q" class="form-control" value="{{ q }}" placeholder="Keresés cím/tartalom"></div>
+  <div class="col-md-2"><select name="status" class="form-select">
+    <option value="">-- állapot --</option>
+    <option value="draft" {% if status=='draft' %}selected{% endif %}>Nem hiteles</option>
+    <option value="filed" {% if status=='filed' %}selected{% endif %}>Hiteles</option>
+    <option value="closed" {% if status=='closed' %}selected{% endif %}>Lezárd</option>
+  </select></div>
+  <div class="col-md-3">
+    <select name="assignee" class="form-select">
+      <option value="">-- Kiosztva --</option>
+      {% for u in users %}<option value="{{ u.id }}" {% if assignee|string == u.id|string %}selected{% endif %}>{{ u.username }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-md-1"><button class="btn btn-outline-primary">Szűr</button></div>
+</form>
+
+<div class="list-group">
+  {% for r in reports %}
+    <div class="list-group-item">
+      <div class="d-flex w-100 justify-content-between">
+        <h5 class="mb-1"><a href="{{ url_for('view_report', report_id=r.id) }}">{{ r.title }}</a></h5>
+        <small class="muted">{{ r.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+      <p class="mb-1">{{ r.content[:200] }}{% if r.content|length > 200 %}...{% endif %}</p>
+      <small class="muted">Létrehozó: {{ r.created_by.username if r.created_by else '---' }} | Állapot: {{ r.status.value }}</small>
+    </div>
+  {% else %}
+    <p>Nincsenek jelentések.</p>
+  {% endfor %}
+</div>
+{% endblock %}

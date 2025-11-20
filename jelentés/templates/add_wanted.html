@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Körözés hozzáadása</h1>
+
+    <div class="mb-3">
+        <label for="wanted-type" class="form-label">Típus</label>
+        <select class="form-select" id="wanted-type">
+            <option value="vehicle">Jármű körözés</option>
+            <option value="person">Személy körözés</option>
+        </select>
+    </div>
+
+    <form id="wanted-form">
+        <div id="vehicle-fields">
+            <input class="form-control mb-2" name="license_plate" placeholder="Jármű rendszáma">
+            <input class="form-control mb-2" name="vehicle_type" placeholder="Jármű típusa">
+            <input class="form-control mb-2" name="vehicle_color" placeholder="Jármű színe">
+        </div>
+
+        <div id="person-fields" class="d-none">
+            <input class="form-control mb-2" name="person_name" placeholder="Személy neve">
+            <input class="form-control mb-2" name="birth_place" placeholder="Születési helye">
+            <input class="form-control mb-2" type="date" name="birth_date">
+            <input class="form-control mb-2" name="mother_name" placeholder="Anyja neve">
+            <input class="form-control mb-2" name="address" placeholder="Lakcím">
+            <input class="form-control mb-2" name="email" placeholder="E-mail">
+            <input class="form-control mb-2" name="phone" placeholder="Telefonszám">
+            <input class="form-control mb-2" name="other_features" placeholder="Egyéb ismertető jegy">
+        </div>
+
+        <input class="form-control mb-2" name="reason" placeholder="Körözés oka">
+        <button type="button" class="btn btn-primary" id="add-wanted-btn">Hozzáadás</button>
+    </form>
+
+    <div id="success-msg" class="alert alert-success d-none mt-3">Sikeresen hozzáadva!</div>
+</div>
+
+<script>
+const typeSelect = document.getElementById('wanted-type');
+const vehicleFields = document.getElementById('vehicle-fields');
+const personFields = document.getElementById('person-fields');
+
+typeSelect.addEventListener('change', () => {
+    if(typeSelect.value === 'vehicle') {
+        vehicleFields.classList.remove('d-none');
+        personFields.classList.add('d-none');
+    } else {
+        vehicleFields.classList.add('d-none');
+        personFields.classList.remove('d-none');
+    }
+});
+
+document.getElementById('add-wanted-btn').addEventListener('click', async () => {
+    const form = document.getElementById('wanted-form');
+    const data = { type: typeSelect.value };
+
+    form.querySelectorAll('input').forEach(input => {
+        if(input.name) data[input.name] = input.value;
+    });
+
+    try {
+        const resp = await fetch('{{ url_for("add_wanted") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await resp.json();
+        if(result.success){
+            document.getElementById('success-msg').classList.remove('d-none');
+            form.reset();
+            vehicleFields.classList.remove('d-none');
+            personFields.classList.add('d-none');
+        } else {
+            alert('Hiba történt a hozzáadás során!');
+        }
+    } catch(e) {
+        alert('Hálózati hiba!');
+    }
+});
+</script>
+{% endblock %}
