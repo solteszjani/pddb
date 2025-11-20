@@ -1382,9 +1382,10 @@ def list_users():
 # ----- Run -----
 if __name__ == '__main__':
     app.run(debug=True)
-port = int(os.environ.get("PORT", 5000))  # Render a PORT változóban adja
+    port = int(os.environ.get("PORT", 5000))  # Render a PORT változóban adja
     app.run(host="0.0.0.0", port=port)
 
 from flask_sqlalchemy import SQLAlchemy
 
 from reportlab.lib.utils import ImageReader as RLImage
+
