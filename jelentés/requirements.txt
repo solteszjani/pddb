@@ -1,0 +1,9 @@
+Flask
+Flask-Login
+Flask-SQLAlchemy
+Werkzeug
+reportlab
+beautifulsoup4
+weasyprint
+cssselect
+PyPDF2
